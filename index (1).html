@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>FinGest Pro — Gestão Financeira</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#2C2C2E;}
+    .hidden{display:none!important;}
+    /* LOGIN */
+    .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:#111111;}
+    .login-card{background:#1C1C1E;border-radius:16px;padding:30px 24px;width:100%;max-width:340px;box-shadow:0 8px 32px rgba(0,0,0,.18);}
+    .login-logo{display:flex;align-items:center;gap:12px;margin-bottom:26px;}
+    .logo-sq{width:42px;height:42px;border-radius:12px;background:#185FA5;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;font-weight:700;}
+    .login-title{font-size:18px;font-weight:600;color:#F2F2F7;}
+    .login-sub{font-size:12px;color:#8E8E93;}
+    .frow{margin-bottom:14px;}
+    .flabel{font-size:11px;color:#A0A0A5;font-weight:600;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px;}
+    .finput{width:100%;padding:12px 14px;font-size:14px;border:1.5px solid #3A3A3C;border-radius:10px;background:#1C1C1E;color:#F2F2F7;transition:border-color .2s;}
+    .finput:focus{outline:none;border-color:#185FA5;box-shadow:0 0 0 3px rgba(24,95,165,.1);}
+    .login-btn{width:100%;padding:14px;font-size:14px;font-weight:600;border-radius:10px;border:none;background:#185FA5;color:#fff;cursor:pointer;transition:background .2s;}
+    .login-btn:hover{background:#0C447C;}
+    .login-hint{font-size:11px;color:#8E8E93;text-align:center;margin-top:14px;background:#2C2C2E;border-radius:8px;padding:10px;line-height:1.8;}
+    .login-err{font-size:12px;color:#A32D2D;background:#FCEBEB;border-radius:8px;padding:10px 12px;margin-bottom:12px;display:none;}
+    .login-err.show{display:block;}
+    /* APP */
+    .app-wrap{display:flex;flex-direction:column;min-height:100vh;background:#2C2C2E;}
+    .topbar{background:#1C1C1E;border-bottom:1px solid #3A3A3C;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;box-shadow:0 1px 4px rgba(0,0,0,.06);}
+    .tb-left{display:flex;align-items:center;gap:10px;}
+    .tb-logo{width:30px;height:30px;border-radius:8px;background:#185FA5;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;}
+    .tb-title{font-size:14px;font-weight:600;color:#F2F2F7;}
+    .tb-right{display:flex;align-items:center;gap:8px;}
+    .user-pill{display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:99px;background:#3A3A3C;border:1px solid #3A3A3C;}
+    .user-av{width:22px;height:22px;border-radius:50%;background:#185FA5;color:#fff;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+    .user-name{font-size:11px;color:#F2F2F7;font-weight:500;}
+    .logout-btn{font-size:11px;color:#A32D2D;cursor:pointer;padding:5px 10px;border-radius:8px;border:1px solid #f5c0c0;background:#FCEBEB;font-weight:500;}
+    .logout-btn:hover{background:#f5c0c0;}
+    .content{padding:14px;flex:1;padding-bottom:90px;}
+    .page{display:none;}.page.active{display:block;}
+    /* NAVBAR */
+    .navbar{position:fixed;bottom:0;left:0;right:0;background:#1C1C1E;border-top:1px solid #3A3A3C;display:flex;z-index:20;padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -2px 8px rgba(0,0,0,.06);}
+    .ntab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px 6px;cursor:pointer;gap:3px;border:none;background:transparent;}
+    .ntab:hover{background:#2C2C2E;}
+    .nico{font-size:18px;line-height:1;}
+    .nlbl{font-size:10px;color:#999;font-weight:500;}
+    .ntab.active .nlbl{color:#185FA5;font-weight:600;}
+    /* FAB */
+    .fab-wrap{position:fixed;bottom:74px;right:14px;z-index:15;}
+    .fab{display:flex;align-items:center;gap:8px;padding:13px 20px;border-radius:99px;background:#185FA5;border:none;color:#fff;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 4px 14px rgba(24,95,165,.4);}
+    .fab:hover{background:#0C447C;}
+    /* Cards */
+    .card{background:#1C1C1E;border:1px solid #3A3A3C;border-radius:14px;margin-bottom:12px;overflow:hidden;box-shadow:none;}
+    .card-hdr{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #3A3A3C;}
+    .card-title{font-size:13px;font-weight:600;color:#F2F2F7;}
+    .badge{font-size:10px;padding:3px 8px;border-radius:99px;font-weight:600;}
+    .bw{background:#FAEEDA;color:#854F0B;}.bd{background:#FCEBEB;color:#A32D2D;}.bg{background:#EAF3DE;color:#3B6D11;}.bi{background:#E6F1FB;color:#185FA5;}
+    /* Métricas */
+    .metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:12px;}
+    .mcard{background:#1C1C1E;border:1px solid #3A3A3C;border-radius:12px;padding:13px;box-shadow:none;}
+    .mlabel{font-size:10px;color:#999;text-transform:uppercase;letter-spacing:.5px;font-weight:600;}
+    .mvalue{font-size:20px;font-weight:700;color:#F2F2F7;margin-top:3px;}
+    .msub{font-size:10px;color:#999;margin-top:3px;}
+    .up{color:#3B6D11;}.down{color:#A32D2D;}
+    /* Itens */
+    .vitem{display:flex;align-items:flex-start;gap:10px;padding:12px 16px;border-top:1px solid #2C2C2E;}
+    .vitem:first-child{border-top:none;}
+    .vav{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+    .vinfo{flex:1;min-width:0;}
+    .vname{font-size:13px;font-weight:600;color:#F2F2F7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .vsub{font-size:11px;color:#8E8E93;margin-top:2px;}
+    .vright{text-align:right;flex-shrink:0;}
+    .vval{font-size:14px;font-weight:700;color:#F2F2F7;}
+    .vdate{font-size:10px;color:#8E8E93;margin-top:2px;}
+    .row-btns{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
+    .abtn{font-size:12px;padding:7px 12px;border-radius:8px;border:none;cursor:pointer;font-weight:600;}
+    .abtn-edit{background:#3A3A3C;color:#D1D1D6;}
+    .abtn-cobrar{background:#185FA5;color:#fff;}
+    .abtn-del{background:#FCEBEB;color:#A32D2D;}
+    .cobrar-btn{font-size:11px;padding:7px 12px;border-radius:8px;border:none;background:#185FA5;color:#fff;cursor:pointer;font-weight:600;margin-top:6px;}
+    .cobrar-btn:hover{background:#0C447C;}
+    /* Tag vencimento */
+    .due-tag{display:inline-flex;align-items:center;gap:4px;border-radius:6px;padding:4px 8px;font-size:11px;margin-top:4px;font-weight:500;}
+    .due-tag.urgente{background:#FCEBEB;color:#A32D2D;}
+    .due-tag.hoje{background:#FAEEDA;color:#854F0B;}
+    .due-tag.normal{background:#E6F1FB;color:#185FA5;}
+    /* Formulário */
+    .form-wrap{padding:16px;}
+    .frow2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+    .fsel{width:100%;padding:12px 14px;font-size:14px;border:1.5px solid #3A3A3C;border-radius:10px;background:#1C1C1E;color:#F2F2F7;}
+    .fsel:focus{outline:none;border-color:#185FA5;}
+    .ftextarea{width:100%;padding:12px 14px;font-size:13px;border:1.5px solid #3A3A3C;border-radius:10px;background:#1C1C1E;color:#F2F2F7;resize:vertical;min-height:110px;line-height:1.6;}
+    .ftextarea:focus{outline:none;border-color:#185FA5;}
+    .save-btn{width:100%;padding:14px;font-size:14px;font-weight:600;border-radius:10px;border:none;background:#185FA5;color:#fff;cursor:pointer;}
+    .save-btn:hover{background:#0C447C;}
+    .cancel-lnk{display:block;text-align:center;margin-top:12px;font-size:13px;color:#8E8E93;cursor:pointer;padding:8px;}
+    .send-big{width:100%;padding:14px;font-size:14px;font-weight:600;border-radius:10px;border:none;background:#25D366;color:#fff;cursor:pointer;}
+    .send-big:hover{background:#128C7E;}
+    .chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+    .chip{padding:7px 14px;border-radius:99px;font-size:12px;border:1.5px solid #3A3A3C;background:#1C1C1E;color:#A0A0A5;cursor:pointer;font-weight:500;}
+    .chip.sel{background:#185FA5;color:#fff;border-color:#185FA5;}
+    .preview-box{background:#2C2C2E;border-radius:10px;padding:12px;font-size:12px;color:#555;line-height:1.7;border-left:3px solid #185FA5;white-space:pre-wrap;margin-bottom:12px;min-height:60px;}
+    .search-wrap{padding:10px 16px;border-bottom:1px solid #2C2C2E;}
+    .sinput{width:100%;padding:10px 13px;font-size:13px;border:1.5px solid #3A3A3C;border-radius:10px;background:#1C1C1E;color:#F2F2F7;}
+    .sinput:focus{outline:none;border-color:#185FA5;}
+    .empty{text-align:center;padding:30px 16px;font-size:13px;color:#8E8E93;line-height:1.9;}
+    .toast{position:fixed;top:68px;left:14px;right:14px;background:#0C447C;color:#fff;padding:13px 16px;border-radius:10px;font-size:13px;text-align:center;z-index:200;display:none;box-shadow:0 4px 16px rgba(0,0,0,.2);font-weight:500;}
+    .toast.show{display:block;}
+    .moverlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);z-index:50;align-items:flex-end;}
+    .moverlay.open{display:flex;}
+    .msheet{background:#1C1C1E;border-radius:20px 20px 0 0;padding:20px 16px;padding-bottom:calc(20px + env(safe-area-inset-bottom));width:100%;max-height:90vh;overflow-y:auto;}
+    .mhandle{width:36px;height:4px;border-radius:2px;background:#DDD;margin:0 auto 16px;}
+    .mtitle{font-size:16px;font-weight:600;color:#F2F2F7;margin-bottom:14px;}
+    .mfooter{display:flex;gap:8px;margin-top:14px;}
+    .mfooter button{flex:1;padding:13px;font-size:13px;border-radius:10px;cursor:pointer;border:1.5px solid #3A3A3C;background:transparent;color:#F2F2F7;font-weight:500;}
+    .mfooter .ok{background:#185FA5;color:#fff;border-color:#185FA5;}
+    .chart-wrap{padding:14px;}
+    .legend{display:flex;gap:14px;font-size:11px;color:#8E8E93;margin-bottom:10px;flex-wrap:wrap;}
+    .leg-dot{width:10px;height:10px;border-radius:3px;display:inline-block;margin-right:4px;}
+    .seg-tabs{display:flex;border:1.5px solid #3A3A3C;border-radius:8px;overflow:hidden;}
+    .seg-tab{flex:1;padding:6px 8px;font-size:11px;text-align:center;cursor:pointer;background:transparent;border:none;color:#8E8E93;font-weight:500;}
+    .seg-tab.active{background:#185FA5;color:#fff;font-weight:600;}
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen" class="login-wrap">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="logo-sq">FG</div>
+      <div><div class="login-title">FinGest Pro</div><div class="login-sub">Painel administrativo</div></div>
+    </div>
+    <div class="login-err" id="loginErr">Usuário ou senha incorretos</div>
+    <div class="frow"><label class="flabel">Usuário</label><input class="finput" id="loginUser" type="text" placeholder="admin" autocomplete="username"></div>
+    <div class="frow"><label class="flabel">Senha</label><input class="finput" id="loginPass" type="password" placeholder="••••••••" autocomplete="current-password"></div>
+    <button class="login-btn" onclick="doLogin()">Entrar no sistema</button>
+    <div class="login-hint">Usuário padrão: <b>admin</b><br>Senha padrão: <b>1234</b></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="appScreen" class="app-wrap hidden">
+  <div class="topbar">
+    <div class="tb-left">
+      <div class="tb-logo">FG</div>
+      <div class="tb-title" id="tbTitle">Painel</div>
+    </div>
+    <div class="tb-right">
+      <div class="user-pill"><div class="user-av" id="userAv">AD</div><span class="user-name" id="userName">Admin</span></div>
+      <button class="logout-btn" onclick="doLogout()">Sair</button>
+    </div>
+  </div>
+  <div id="appToast" class="toast"></div>
+  <div class="content">
+    <div class="page active" id="pg-home">
+      <div class="metrics" id="homeMetrics"></div>
+      <div class="card">
+        <div class="card-hdr"><span class="card-title">Receita mensal</span>
+          <div class="seg-tabs"><button class="seg-tab active" onclick="setPeriod('6m',this)">6 meses</button><button class="seg-tab" onclick="setPeriod('12m',this)">12 meses</button></div>
+        </div>
+        <div class="chart-wrap">
+          <div class="legend"><span><span class="leg-dot" style="background:#185FA5;"></span>Recebido</span><span><span class="leg-dot" style="background:#E24B4A;"></span>Em aberto</span></div>
+          <div style="position:relative;height:180px;"><canvas id="chartR"></canvas></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hdr"><span class="card-title">Clientes por status</span></div>
+        <div class="chart-wrap" style="display:flex;align-items:center;gap:16px;">
+          <div style="position:relative;height:130px;width:130px;flex-shrink:0;"><canvas id="chartS"></canvas></div>
+          <div id="statusLeg" style="flex:1;"></div>
+        </div>
+      </div>
+      <div class="card" id="homeVenc"></div>
+    </div>
+    <div class="page" id="pg-clients">
+      <div class="card">
+        <div class="search-wrap"><input class="sinput" placeholder="Buscar nome ou serviço..." oninput="searchClients(this.value)"></div>
+        <div id="clientListEl"></div>
+      </div>
+    </div>
+    <div class="page" id="pg-form">
+      <div class="card">
+        <div class="card-hdr"><span class="card-title" id="formTitle">Novo cliente</span></div>
+        <div class="form-wrap">
+          <input type="hidden" id="f_id">
+          <div class="frow"><label class="flabel">Nome / empresa *</label><input class="finput" id="f_name" placeholder="Ex: Academia FitLife"></div>
+          <div class="frow"><label class="flabel">Serviço contratado *</label><input class="finput" id="f_service" placeholder="Ex: Mensalidade Sistema"></div>
+          <div class="frow2">
+            <div><label class="flabel">Valor R$ *</label><input class="finput" id="f_value" type="text" inputmode="decimal" placeholder="0,00" oninput="maskValor(this)" onblur="formatValorInput(this)"></div>
+            <div><label class="flabel">Data de vencimento *</label><input class="finput" id="f_day" type="date" style="color-scheme:dark;"></div>
+          </div>
+          <div class="frow"><label class="flabel">WhatsApp (com DDD) *</label><input class="finput" id="f_phone" type="tel" inputmode="tel" placeholder="21999990000"></div>
+          <div class="frow"><label class="flabel">E-mail (opcional)</label><input class="finput" id="f_email" type="email" placeholder="email@exemplo.com"></div>
+          <div class="frow"><label class="flabel">Observações (opcional)</label><input class="finput" id="f_obs" placeholder="Ex: paga via boleto"></div>
+          <div class="frow"><label class="flabel">Status</label>
+            <select class="fsel" id="f_status"><option value="ativo">Ativo</option><option value="atrasado">Atrasado</option><option value="inativo">Inativo</option></select>
+          </div>
+          <button class="save-btn" onclick="saveClient()">Salvar cliente</button>
+          <span class="cancel-lnk" onclick="goPage('clients')">Cancelar</span>
+        </div>
+      </div>
+    </div>
+    <div class="page" id="pg-msg">
+      <div class="card">
+        <div class="card-hdr"><span class="card-title">Enviar cobrança</span></div>
+        <div class="form-wrap">
+          <div class="frow"><label class="flabel">Cliente</label><select class="fsel" id="msg_client" onchange="onMsgClient()"><option value="">Selecione o cliente...</option></select></div>
+          <div class="frow"><label class="flabel">Tipo de mensagem</label>
+            <div class="chips" id="chipGroup">
+              <div class="chip sel" onclick="selChip(this,'lembrete')">Lembrete</div>
+              <div class="chip" onclick="selChip(this,'vencimento')">Vence hoje</div>
+              <div class="chip" onclick="selChip(this,'atraso')">Em atraso</div>
+              <div class="chip" onclick="selChip(this,'livre')">Personalizada</div>
+            </div>
+          </div>
+          <div class="frow"><label class="flabel">Mensagem</label><textarea class="ftextarea" id="msg_text" oninput="syncPrev()" placeholder="Selecione um cliente para gerar automaticamente..."></textarea></div>
+          <div class="frow"><label class="flabel">Pré-visualização WhatsApp</label><div class="preview-box" id="msg_prev">Selecione um cliente acima...</div></div>
+          <button class="send-big" onclick="sendMsg()">📲 Enviar pelo WhatsApp</button>
+        </div>
+      </div>
+    </div>
+    <div class="page" id="pg-hist"><div class="card" id="histCard"></div></div>
+  </div>
+  <nav class="navbar">
+    <button class="ntab active" id="tab-home" onclick="goPage('home')"><span class="nico">⊞</span><span class="nlbl">Painel</span></button>
+    <button class="ntab" id="tab-clients" onclick="goPage('clients')"><span class="nico">◎</span><span class="nlbl">Clientes</span></button>
+    <button class="ntab" id="tab-msg" onclick="goPage('msg')"><span class="nico">◉</span><span class="nlbl">Cobrar</span></button>
+    <button class="ntab" id="tab-hist" onclick="goPage('hist')"><span class="nico">◧</span><span class="nlbl">Histórico</span></button>
+  </nav>
+</div>
+
+<div class="fab-wrap hidden" id="fabWrap">
+  <button class="fab" onclick="openNewClient()"><span style="font-size:20px;font-weight:300;">+</span><span>Novo cliente</span></button>
+</div>
+
+<div class="moverlay" id="delMod" onclick="closeMod('delMod',event)">
+  <div class="msheet">
+    <div class="mhandle"></div>
+    <div class="mtitle">Excluir cliente</div>
+    <p style="font-size:13px;color:#A0A0A5;line-height:1.6;" id="delMsg"></p>
+    <div class="mfooter">
+      <button onclick="closeMod('delMod')">Cancelar</button>
+      <button style="flex:1;padding:13px;font-size:13px;border-radius:10px;cursor:pointer;border:none;background:#A32D2D;color:#fff;font-weight:600;" onclick="confirmDel()">Excluir</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const TODAY=new Date();
+function nextDue(d){const r=new Date(TODAY.getFullYear(),TODAY.getMonth(),d);if(r<=TODAY)r.setMonth(r.getMonth()+1);return r;}
+function fDate(d){
+  const dt=new Date(d);
+  const dd=String(dt.getDate()).padStart(2,'0');
+  const mm=String(dt.getMonth()+1).padStart(2,'0');
+  const yyyy=dt.getFullYear();
+  return dd+'/'+mm+'/'+yyyy;
+}
+function fMoney(v){
+  const n=Number(v);
+  return 'R$ '+n.toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+}
+function maskValor(el){
+  let v=el.value.replace(/[^\d,]/g,'');
+  const parts=v.split(',');
+  if(parts.length>2) v=parts[0]+','+parts.slice(1).join('');
+  if(parts[1]&&parts[1].length>2) v=parts[0]+','+parts[1].slice(0,2);
+  el.value=v;
+}
+function diffD(d){return Math.round((new Date(d)-TODAY)/86400000);}
+function inits(n){return String(n).split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();}
+function fn(n){return String(n).split(' ')[0];}
+function addD(d,n){const r=new Date(d);r.setDate(r.getDate()+n);return r;}
+const AV=[{bg:'#E6F1FB',fg:'#185FA5'},{bg:'#E1F5EE',fg:'#0F6E56'},{bg:'#FAEEDA',fg:'#854F0B'},{bg:'#FAECE7',fg:'#993C1D'},{bg:'#FBEAF0',fg:'#993556'},{bg:'#EAF3DE',fg:'#3B6D11'}];
+function ac(i){return AV[i%AV.length];}
+const USERS=[{user:'admin',pass:'1234',name:'Administrador',initials:'AD'},{user:'gerente',pass:'4321',name:'Gerente',initials:'GR'}];
+let loggedUser=null,curTpl='lembrete',delId=null,msgHistory=[],cR=null,cS=null,period='6m';
+function loadCl(){try{const s=localStorage.getItem('fg_v4');if(s)return JSON.parse(s);}catch(e){}return [{id:1,name:'Academia FitLife',service:'Mensalidade Sistema',value:499,dueDay:5,phone:'5521999990001',email:'',obs:'',status:'ativo'},{id:2,name:'Barbearia Corte Fino',service:'Software PDV',value:189,dueDay:8,phone:'5521999990002',email:'',obs:'',status:'ativo'},{id:3,name:'Clínica Saúde Total',service:'Sistema Clínico',value:890,dueDay:3,phone:'5521999990003',email:'',obs:'',status:'ativo'}];}
+function saveCl(){try{localStorage.setItem('fg_v4',JSON.stringify(clients));}catch(e){}}
+let clients=loadCl();
+const TMPL={
+  lembrete:(c)=>`Olá ${fn(c.name)}! 👋\n\nLembramos que seu pagamento de *${fMoney(c.value)}* referente a *${c.service}* vence em *${fDate(nextDue(c.dueDay))}*.\n\nQualquer dúvida estamos à disposição!\n\n_Obrigado pela preferência_ 🙏`,
+  vencimento:(c)=>`Olá ${fn(c.name)}! ⚠️\n\nSeu pagamento de *${fMoney(c.value)}* (${c.service}) vence *HOJE, ${fDate(new Date())}*.\n\nRealize o pagamento para evitar interrupções.\n\n_Grato pela preferência!_`,
+  atraso:(c)=>`Olá ${fn(c.name)},\n\nIdentificamos um pagamento em atraso de *${fMoney(c.value)}* referente a *${c.service}*, que venceu em *${fDate(nextDue(c.dueDay))}*.\n\nPor favor regularize o quanto antes.\n\n_Atenciosamente._`,
+  livre:()=>''
+};
+document.getElementById('loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+document.getElementById('loginUser').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('loginPass').focus();});
+// ── Formatar valor: 35 → "35,00" ao sair do campo ──────────────
+function formatValorInput(el){
+  let v=el.value.replace(/[^\d,]/g,'').replace(',','.');
+  let n=parseFloat(v);
+  if(!isNaN(n)) el.value=n.toFixed(2).replace('.',',');
+}
+// ── Formatar data: digita 14052026 → 14/05/2026 ────────────────
+function formatDateInput(el){
+  let v=el.value.replace(/\D/g,'').slice(0,8);
+  if(v.length>=5) v=v.slice(0,2)+'/'+v.slice(2,4)+'/'+v.slice(4);
+  else if(v.length>=3) v=v.slice(0,2)+'/'+v.slice(2);
+  el.value=v;
+}
+function doLogin(){const u=document.getElementById('loginUser').value.trim(),p=document.getElementById('loginPass').value,found=USERS.find(x=>x.user===u&&x.pass===p);if(!found){document.getElementById('loginErr').classList.add('show');return;}document.getElementById('loginErr').classList.remove('show');loggedUser=found;document.getElementById('loginScreen').classList.add('hidden');document.getElementById('appScreen').classList.remove('hidden');document.getElementById('userAv').textContent=found.initials;document.getElementById('userName').textContent=found.name;goPage('home');}
+function doLogout(){loggedUser=null;document.getElementById('appScreen').classList.add('hidden');document.getElementById('loginScreen').classList.remove('hidden');document.getElementById('loginUser').value='';document.getElementById('loginPass').value='';if(cR){cR.destroy();cR=null;}if(cS){cS.destroy();cS=null;}}
+const PT={home:'Painel',clients:'Clientes',form:'Cadastro',msg:'Cobranças',hist:'Histórico'};
+function goPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));document.getElementById('pg-'+id).classList.add('active');const tab=document.getElementById('tab-'+id);if(tab)tab.classList.add('active');document.getElementById('tbTitle').textContent=PT[id]||'';document.getElementById('fabWrap').classList.toggle('hidden',!(id==='clients'||id==='home'));if(id==='home')renderHome();if(id==='clients')renderClients();if(id==='msg')renderMsgPage();if(id==='hist')renderHist();}
+function renderHome(){const ativos=clients.filter(c=>c.status==='ativo').length,atrasados=clients.filter(c=>c.status==='atrasado').length,receita=clients.filter(c=>c.status!=='inativo').reduce((s,c)=>s+Number(c.value),0),ticket=clients.length?receita/clients.length:0;document.getElementById('homeMetrics').innerHTML=`<div class="mcard"><div class="mlabel">Clientes</div><div class="mvalue">${clients.length}</div><div class="msub">${ativos} ativos</div></div><div class="mcard"><div class="mlabel">Receita mensal</div><div class="mvalue">${fMoney(receita)}</div><div class="msub">soma contratos</div></div><div class="mcard"><div class="mlabel">Em atraso</div><div class="mvalue down">${atrasados}</div><div class="msub down">clientes</div></div><div class="mcard"><div class="mlabel">Ticket médio</div><div class="mvalue up">${fMoney(ticket)}</div><div class="msub up">por cliente</div></div>`;buildChartR();buildChartS();const n7=[];for(let i=0;i<7;i++){const d=addD(TODAY,i);clients.filter(c=>c.status!=='inativo'&&c.dueDay===d.getDate()).forEach(c=>n7.push({c,diff:i,date:d}));}const vhtml=n7.slice(0,6).map((v,i)=>{const a=ac(i),dateStr=fDate(v.date),badge=v.diff===0?`<span class="badge bw">Hoje</span>`:v.diff===1?`<span class="badge bw">Amanhã</span>`:`<span class="badge bi">${v.diff}d</span>`;return `<div class="vitem"><div class="vav" style="background:${a.bg};color:${a.fg};">${inits(v.c.name)}</div><div class="vinfo"><div class="vname">${v.c.name}</div><div class="vsub">${v.c.service}</div><div class="vsub" style="color:#185FA5;font-weight:600;margin-top:3px;">📅 ${dateStr} ${badge}</div></div><div class="vright"><div class="vval">${fMoney(v.c.value)}</div><button class="cobrar-btn" onclick="quickCobrar(${v.c.id})">Cobrar agora</button></div></div>`;}).join('');document.getElementById('homeVenc').innerHTML=`<div class="card-hdr"><span class="card-title">Vencimentos — próximos 7 dias</span><span class="badge bw">${n7.length}</span></div>${n7.length?vhtml:'<div class="empty">Nenhum vencimento nos próximos 7 dias</div>'}`;}
+function buildChartR(){const months=period==='6m'?6:12,labels=[],rec=[],ab=[],mn=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];for(let i=months-1;i>=0;i--){const d=new Date(TODAY.getFullYear(),TODAY.getMonth()-i,1);labels.push(mn[d.getMonth()]+'/'+String(d.getFullYear()).slice(2));const base=clients.filter(c=>c.status!=='inativo').reduce((s,c)=>s+Number(c.value),0),v=0.65+Math.random()*.55,miss=Math.random()>.65?Math.floor(Math.random()*clients.length*.25):0,mv=miss*(base/(clients.length||1));rec.push(Math.round((base-mv)*v));ab.push(Math.round(mv*(.4+Math.random()*.4)));}if(cR)cR.destroy();cR=new Chart(document.getElementById('chartR').getContext('2d'),{type:'bar',data:{labels,datasets:[{label:'Recebido',data:rec,backgroundColor:'#185FA5',borderRadius:5,barPercentage:.6},{label:'Em aberto',data:ab,backgroundColor:'#E24B4A',borderRadius:5,barPercentage:.6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:(ctx)=>`${ctx.dataset.label}: ${fMoney(ctx.parsed.y)}`}}},scales:{x:{grid:{display:false},ticks:{font:{size:9}}},y:{grid:{color:'rgba(0,0,0,.06)'},ticks:{font:{size:10},callback:(v)=>'R$'+Math.round(v/1000)+'k'}}}}});}
+function setPeriod(p,el){period=p;document.querySelectorAll('.seg-tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');buildChartR();}
+function buildChartS(){const ativos=clients.filter(c=>c.status==='ativo').length,atrasados=clients.filter(c=>c.status==='atrasado').length,inativos=clients.filter(c=>c.status==='inativo').length;if(cS)cS.destroy();cS=new Chart(document.getElementById('chartS').getContext('2d'),{type:'doughnut',data:{labels:['Ativos','Atrasados','Inativos'],datasets:[{data:[ativos,atrasados,inativos],backgroundColor:['#185FA5','#E24B4A','#B4B2A9'],borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false}}}});const total=clients.length||1;document.getElementById('statusLeg').innerHTML=[{label:'Ativos',count:ativos,color:'#185FA5'},{label:'Atrasados',count:atrasados,color:'#E24B4A'},{label:'Inativos',count:inativos,color:'#B4B2A9'}].map(s=>`<div style="display:flex;align-items:center;gap:6px;margin-bottom:9px;"><span style="width:10px;height:10px;border-radius:3px;background:${s.color};flex-shrink:0;display:inline-block;"></span><span style="font-size:12px;color:#A0A0A5;flex:1;">${s.label}</span><span style="font-size:13px;font-weight:700;color:#F2F2F7;">${s.count}</span><span style="font-size:11px;color:#8E8E93;">${Math.round(s.count/total*100)}%</span></div>`).join('');}
+function renderClients(filter=''){const list=filter?clients.filter(c=>c.name.toLowerCase().includes(filter.toLowerCase())||c.service.toLowerCase().includes(filter.toLowerCase())):clients;if(!list.length){document.getElementById('clientListEl').innerHTML='<div class="empty">Nenhum cliente encontrado.<br>Toque em <b>+ Novo cliente</b> para cadastrar.</div>';return;}const html=list.map(c=>{const i=clients.indexOf(c),a=ac(i),nd=nextDue(c.dueDay),diff=diffD(nd),dc=c.status==='ativo'?'#639922':c.status==='atrasado'?'#E24B4A':'#B4B2A9',sl=c.status==='ativo'?'Ativo':c.status==='atrasado'?'Atrasado':'Inativo',tagCl=diff<0?'urgente':diff===0?'hoje':diff<=3?'hoje':'normal',dateLabel=diff<0?`Venceu em ${fDate(nd)} — ${Math.abs(diff)}d atraso`:diff===0?`Vence HOJE — ${fDate(nd)}`:`Próx. venc.: ${fDate(nd)}`;return `<div class="vitem"><div class="vav" style="background:${a.bg};color:${a.fg};">${inits(c.name)}</div><div class="vinfo"><div class="vname">${c.name}</div><div class="vsub">${c.service}</div><div class="due-tag ${tagCl}">📅 ${dateLabel}</div><div class="vsub" style="margin-top:4px;"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${dc};margin-right:3px;vertical-align:middle;"></span>${sl}</div>${c.obs?`<div class="vsub" style="font-style:italic;">${c.obs}</div>`:''}<div class="row-btns"><button class="abtn abtn-edit" onclick="editClient(${c.id})">Editar</button><button class="abtn abtn-cobrar" onclick="quickCobrar(${c.id})">Cobrar agora</button><button class="abtn abtn-del" onclick="askDel(${c.id})">Excluir</button></div></div><div class="vright"><div class="vval">${fMoney(c.value)}</div><div class="vdate">/mês</div></div></div>`;}).join('');document.getElementById('clientListEl').innerHTML=html;}
+function searchClients(q){renderClients(q);}
+function openNewClient(){['f_id','f_name','f_service','f_value','f_day','f_phone','f_email','f_obs'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});document.getElementById('f_status').value='ativo';document.getElementById('formTitle').textContent='Novo cliente';goPage('form');}
+function editClient(id){const c=clients.find(x=>x.id===id);if(!c)return;document.getElementById('f_id').value=c.id;document.getElementById('f_name').value=c.name;document.getElementById('f_service').value=c.service;document.getElementById('f_value').value=Number(c.value).toFixed(2).replace('.',',');const nd=c.dueFull||`${TODAY.getFullYear()}-${String(TODAY.getMonth()+1).padStart(2,'0')}-${String(c.dueDay).padStart(2,'0')}`;document.getElementById('f_day').value=nd;document.getElementById('f_phone').value=c.phone;document.getElementById('f_email').value=c.email||'';document.getElementById('f_obs').value=c.obs||'';document.getElementById('f_status').value=c.status||'ativo';document.getElementById('formTitle').textContent='Editar cliente';goPage('form');}
+function saveClient(){const name=document.getElementById('f_name').value.trim(),service=document.getElementById('f_service').value.trim(),valueRaw=document.getElementById('f_value').value.replace(/\./g,'').replace(',','.'),value=parseFloat(valueRaw)||0,dueDateRaw=document.getElementById('f_day').value,phone=document.getElementById('f_phone').value.replace(/\D/g,''),email=document.getElementById('f_email').value.trim(),obs=document.getElementById('f_obs').value.trim(),status=document.getElementById('f_status').value,eid=document.getElementById('f_id').value;if(!name){showToast('Informe o nome');return;}if(!service){showToast('Informe o serviço');return;}if(!value){showToast('Informe o valor');return;}if(!dueDateRaw){showToast('Informe a data de vencimento');return;}if(!phone){showToast('Informe o WhatsApp');return;}const dueDay=parseInt(dueDateRaw.split('-')[2]);const ph='55'+phone.replace(/^55/,'');if(eid){const idx=clients.findIndex(c=>c.id===parseInt(eid));if(idx>=0)clients[idx]={...clients[idx],name,service,value,dueDay,dueFull:dueDateRaw,phone:ph,email,obs,status};showToast('Cliente atualizado!');}else{clients.push({id:Date.now(),name,service,value,dueDay,dueFull:dueDateRaw,phone:ph,email,obs,status});showToast('Cliente cadastrado!');}saveCl();goPage('clients');}
+function askDel(id){const c=clients.find(x=>x.id===id);if(!c)return;delId=id;document.getElementById('delMsg').textContent=`Deseja excluir "${c.name}"? Esta ação não pode ser desfeita.`;document.getElementById('delMod').classList.add('open');}
+function confirmDel(){if(delId){clients=clients.filter(c=>c.id!==delId);saveCl();showToast('Cliente excluído');delId=null;}closeMod('delMod');renderClients();}
+function renderMsgPage(){const sel=document.getElementById('msg_client');if(sel){const prev=sel.value;sel.innerHTML='<option value="">Selecione o cliente...</option>'+clients.filter(c=>c.status!=='inativo').map(c=>`<option value="${c.id}">${c.name}</option>`).join('');if(prev)sel.value=prev;}syncPrev();}
+function quickCobrar(id){goPage('msg');setTimeout(()=>{const s=document.getElementById('msg_client');if(s){s.value=id;onMsgClient();}},80);}
+function selChip(el,t){curTpl=t;document.querySelectorAll('.chip').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');onMsgClient();}
+function onMsgClient(){const cid=parseInt(document.getElementById('msg_client')?.value),c=clients.find(x=>x.id===cid),ta=document.getElementById('msg_text');if(c&&ta&&curTpl!=='livre')ta.value=TMPL[curTpl](c);else if(ta&&curTpl==='livre')ta.value='';syncPrev();}
+function syncPrev(){const ta=document.getElementById('msg_text'),pre=document.getElementById('msg_prev');if(ta&&pre)pre.textContent=ta.value||'Selecione um cliente acima...';}
+function sendMsg(){const cid=parseInt(document.getElementById('msg_client')?.value),c=clients.find(x=>x.id===cid),msg=document.getElementById('msg_text')?.value?.trim()||'';if(!c){showToast('Selecione um cliente');return;}if(!msg){showToast('Digite a mensagem');return;}msgHistory.unshift({id:Date.now(),clientId:c.id,clientName:c.name,msg,time:new Date()});showToast('Mensagem enviada!');goPage('hist');}
+function renderHist(){const el=document.getElementById('histCard');if(!msgHistory.length){el.innerHTML=`<div class="card-hdr"><span class="card-title">Histórico de envios</span><span class="badge bi">0</span></div><div class="empty">Nenhuma mensagem ainda.<br>Vá em <b>Cobrar</b> e envie sua primeira cobrança.</div>`;return;}const rows=msgHistory.map(h=>{const t=new Date(h.time).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});return `<div style="padding:12px 16px;border-top:1px solid #2C2C2E;"><div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;flex-wrap:wrap;"><span style="font-size:12px;font-weight:600;color:#F2F2F7;">${h.clientName}</span><span style="font-size:10px;padding:2px 8px;border-radius:99px;background:#E1F5EE;color:#0F6E56;font-weight:600;">WhatsApp</span><span style="font-size:10px;color:#8E8E93;margin-left:auto;">${t}</span></div><div style="font-size:11px;color:#A0A0A5;line-height:1.6;">${h.msg}</div></div>`;}).join('');el.innerHTML=`<div class="card-hdr"><span class="card-title">Histórico de envios</span><span class="badge bi">${msgHistory.length}</span></div>${rows}`;}
+function showToast(msg){const t=document.getElementById('appToast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
+function closeMod(id,e){if(!e||e.target===document.getElementById(id))document.getElementById(id).classList.remove('open');}
+</script>
+</body>
+</html>
